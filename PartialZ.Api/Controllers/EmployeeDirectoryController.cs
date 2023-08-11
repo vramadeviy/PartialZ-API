@@ -50,5 +50,12 @@ namespace PartialZ.Api.Controllers
             var result = this._employeedirectoryservice.GetEmployeedirectoryClaimantdetails(ssn);
             return result;
         }
+        [HttpPost]
+        [Route("DeleteEmployeeDirectory")]
+        public async Task<IActionResult> DeleteEmplpyeeDirectoryDetails(string ssn)
+        {
+            var result = this._employeedirectoryservice.DeleteEmplpyeeDirectoryDetails(ssn);
+            return Json(result);
+        }
     }
 }

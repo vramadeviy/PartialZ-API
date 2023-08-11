@@ -6,7 +6,7 @@ using PartialZ.Api.Services.Interfaces;
 using PartialZ.DataAccess.PartialZDB;
 namespace PartialZ.Api.Services
 {
-    public class EmployeeDirectoryService :IEmployeeDirectoryService
+    public class EmployeeDirectoryService : IEmployeeDirectoryService
     {
         private PartialClaimsContext _PartialClaimsContext;
         public EmployeeDirectoryService(PartialClaimsContext PartialClaimsContext)
@@ -80,9 +80,9 @@ namespace PartialZ.Api.Services
 
 
             return dd;
-                
-                
-           
+
+
+
         }
 
         public async Task<int> SaveEmplpyeeDirectoryDetails(EmployeeDirectoryDto empDirectoryDto)
@@ -107,16 +107,16 @@ namespace PartialZ.Api.Services
                     existingdata.MailingState = empDirectoryDto.MailingState;
                     existingdata.ZipCode = empDirectoryDto.ZipCode;
                     existingdata.Gender = empDirectoryDto.Gender;
-                    existingdata.Handicap  = empDirectoryDto.Handicap;
+                    existingdata.Handicap = empDirectoryDto.Handicap;
                     existingdata.VeteranStatus = empDirectoryDto.VeteranStatus;
 
-                    existingdata.Race  = empDirectoryDto.Race;
+                    existingdata.Race = empDirectoryDto.Race;
                     existingdata.Ethnicity = empDirectoryDto.Ethnicity;
                     existingdata.FederalwithHolding = empDirectoryDto.FederalwithHolding;
                     existingdata.Citizen = empDirectoryDto.Citizen;
                     existingdata.AuthorizedAlienNumber = empDirectoryDto.AuthorizedAlienNumber;
                     existingdata.Education = empDirectoryDto.Education;
-                    existingdata.Occupation = empDirectoryDto.Occupation;                  
+                    existingdata.Occupation = empDirectoryDto.Occupation;
 
 
                     existingdata.LastModifedDate = DateTime.UtcNow;
@@ -156,7 +156,7 @@ namespace PartialZ.Api.Services
                     await this._PartialClaimsContext.EmployeeDirectories.AddAsync(data);
                     await this._PartialClaimsContext.SaveChangesAsync();
                     employeeDirectoryID = data.EmployeeDirectoryId;
-                } 
+                }
                 return employeeDirectoryID;
             }
             catch (Exception ex)
@@ -175,33 +175,33 @@ namespace PartialZ.Api.Services
                 (e, x) => new { e, x })
                 .Join(this._PartialClaimsContext.States, e => e.e.f.MailingState, x => x.StateId,
                (z, h) => new EmployeeDirectoryDetailsDto
-              {
-                  Email = z.e.s.Email,
-                  SocialSecurityNumber = z.e.f.SocialSecurityNumber,
-                  DateOfBirth = z.e.f.DateOfBirth,
-                  ClaimantFirstName = z.e.f.ClaimantFirstName,
-                  ClaimantMiddleName = z.e.f.ClaimantMiddleName,
-                  ClaimantLastName =z.e.f.ClaimantLastName,
-                  ClaimantSuffix = z.e.f.ClaimantSuffix,
-                  TelephoneNumber = z.e.f.TelephoneNumber,
-                  Gender = z.x.Code,
+               {
+                   Email = z.e.s.Email,
+                   SocialSecurityNumber = z.e.f.SocialSecurityNumber,
+                   DateOfBirth = z.e.f.DateOfBirth,
+                   ClaimantFirstName = z.e.f.ClaimantFirstName,
+                   ClaimantMiddleName = z.e.f.ClaimantMiddleName,
+                   ClaimantLastName = z.e.f.ClaimantLastName,
+                   ClaimantSuffix = z.e.f.ClaimantSuffix,
+                   TelephoneNumber = z.e.f.TelephoneNumber,
+                   Gender = z.x.Code,
                    GenderCode = z.x.GenderId,
                    Occupation = z.e.f.Occupation,
-                   MailingStreetAddress = z.e.f.MailingStreetAddress ,
-                  MailingCity = z.e.f.MailingCity ,
+                   MailingStreetAddress = z.e.f.MailingStreetAddress,
+                   MailingCity = z.e.f.MailingCity,
                    MailingStateCode = h.StateCode,
                    MailingState = z.e.f.MailingState,
-                  ZipCode =z.e.f.ZipCode,
-                  Citizen = z.e.f.Citizen,
-                  Ethnicity = z.e.f.Ethnicity,
-                  Race = z.e.f.Race,
-                  Handicap = z.e.f.Handicap,
-                  FederalwithHolding = z.e.f.FederalwithHolding,
-                  VeteranStatus = z.e.f.VeteranStatus,
-                  Education = z.e.f.Education,
-                  AuthorizedAlienNumber = z.e.f.AuthorizedAlienNumber
-                  
-              }).Where(e => e.Email == EmailID).ToList();
+                   ZipCode = z.e.f.ZipCode,
+                   Citizen = z.e.f.Citizen,
+                   Ethnicity = z.e.f.Ethnicity,
+                   Race = z.e.f.Race,
+                   Handicap = z.e.f.Handicap,
+                   FederalwithHolding = z.e.f.FederalwithHolding,
+                   VeteranStatus = z.e.f.VeteranStatus,
+                   Education = z.e.f.Education,
+                   AuthorizedAlienNumber = z.e.f.AuthorizedAlienNumber
+
+               }).Where(e => e.Email == EmailID).ToList();
 
             return result;
         }
@@ -294,6 +294,24 @@ namespace PartialZ.Api.Services
             return result;
         }
 
+        public async Task<string> DeleteEmplpyeeDirectoryDetails(string ssn)
+        {
+            try
+            {
+                if (this._PartialClaimsContext.EmployeeDirectories.Where(e => e.SocialSecurityNumber == ssn).Any())
+                {
+                    var existingdata = await this._PartialClaimsContext.EmployeeDirectories.Where(e => e.SocialSecurityNumber == ssn).FirstAsync();
+                    this._PartialClaimsContext.EmployeeDirectories.Remove(existingdata);
+                    this._PartialClaimsContext.SaveChangesAsync();
+                   
+                }
+                return "Deleted Successfully..";
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+        }
     }
      
 }

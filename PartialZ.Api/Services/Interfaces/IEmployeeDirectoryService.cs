@@ -8,5 +8,6 @@ namespace PartialZ.Api.Services.Interfaces
         Task<int> SaveEmplpyeeDirectoryDetails(EmployeeDirectoryDto empDirectoryDto);
         List<EmployeeDirectoryDetailsDto> GetEmployeeDirectoryDetails(string EmailID);
         EmployeeDirectoryDto GetEmployeedirectoryClaimantdetails(string ssn);
+        Task<string> DeleteEmplpyeeDirectoryDetails(string ssn);
     }
 }
