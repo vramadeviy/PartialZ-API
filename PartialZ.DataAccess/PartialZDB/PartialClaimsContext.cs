@@ -55,7 +55,7 @@ public partial class PartialClaimsContext : DbContext
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
 #warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see http://go.microsoft.com/fwlink/?LinkId=723263.
-        => optionsBuilder.UseSqlServer("Data Source=APPDEVDB19;Initial Catalog=PartialClaims;Persist Security Info=True;TrustServerCertificate=True;User ID=PartialEmp_User;Password=BtFItmFmnX04clyyrIGu");
+        => optionsBuilder.UseSqlServer("Data Source=10.2.216.202,36117;Initial Catalog=PartialClaims;User ID=PartialEmp_User;Password=BtFItmFmnX04clyyrIGu;Persist Security Info=True;Integrated Security=False;TrustServerCertificate=True;");
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -63,7 +63,18 @@ public partial class PartialClaimsContext : DbContext
 
         modelBuilder.Entity<Claim>(entity =>
         {
-            entity.ToTable("Claims", "dbo");
+            entity
+                .ToTable("Claims", "dbo")
+                .ToTable(tb => tb.IsTemporal(ttb =>
+                    {
+                        ttb.UseHistoryTable("Claims_History", "dbo");
+                        ttb
+                            .HasPeriodStart("TimeStart")
+                            .HasColumnName("TimeStart");
+                        ttb
+                            .HasPeriodEnd("TimeEnd")
+                            .HasColumnName("TimeEnd");
+                    }));
 
             entity.Property(e => e.AuthorizedAlienNumber)
                 .HasMaxLength(20)
@@ -84,6 +95,7 @@ public partial class PartialClaimsContext : DbContext
             entity.Property(e => e.SocialSecurityNumber)
                 .HasMaxLength(15)
                 .IsFixedLength();
+            entity.Property(e => e.Status).HasMaxLength(10);
             entity.Property(e => e.TelephoneNumber).HasMaxLength(15);
             entity.Property(e => e.VacationPay).HasColumnType("decimal(18, 0)");
             entity.Property(e => e.WeekEndingDate).HasColumnType("datetime");
@@ -93,7 +105,7 @@ public partial class PartialClaimsContext : DbContext
 
             entity.HasOne(d => d.Filer).WithMany(p => p.Claims)
                 .HasForeignKey(d => d.FilerId)
-                .HasConstraintName("FK__Claims__FilerId__37703C52");
+                .HasConstraintName("FK__Claims__FilerId__0E391C95");
         });
 
         modelBuilder.Entity<DropdownCitizen>(entity =>
@@ -259,7 +271,18 @@ public partial class PartialClaimsContext : DbContext
 
         modelBuilder.Entity<EmployeeDirectory>(entity =>
         {
-            entity.ToTable("EmployeeDirectories", "dbo");
+            entity
+                .ToTable("EmployeeDirectories", "dbo")
+                .ToTable(tb => tb.IsTemporal(ttb =>
+                    {
+                        ttb.UseHistoryTable("EmployeeDirectories_History", "dbo");
+                        ttb
+                            .HasPeriodStart("TimeStart")
+                            .HasColumnName("TimeStart");
+                        ttb
+                            .HasPeriodEnd("TimeEnd")
+                            .HasColumnName("TimeEnd");
+                    }));
 
             entity.Property(e => e.AuthorizedAlienNumber).HasMaxLength(20);
             entity.Property(e => e.ClaimantFirstName).HasMaxLength(100);
@@ -272,12 +295,13 @@ public partial class PartialClaimsContext : DbContext
             entity.Property(e => e.MailingStreetAddress).HasMaxLength(200);
             entity.Property(e => e.Occupation).HasMaxLength(50);
             entity.Property(e => e.SocialSecurityNumber).HasMaxLength(20);
+            entity.Property(e => e.Status).HasMaxLength(10);
             entity.Property(e => e.TelephoneNumber).HasMaxLength(15);
             entity.Property(e => e.ZipCode).HasMaxLength(10);
 
             entity.HasOne(d => d.Filer).WithMany(p => p.EmployeeDirectories)
                 .HasForeignKey(d => d.FilerId)
-                .HasConstraintName("FK__EmployeeD__Filer__3493CFA7");
+                .HasConstraintName("FK__EmployeeD__Filer__1C873BEC");
         });
 
         modelBuilder.Entity<EmployeeWorkHistory>(entity =>

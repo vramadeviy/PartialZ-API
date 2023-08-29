@@ -30,7 +30,7 @@ builder.Services.AddCors(options => {
 
     options.AddDefaultPolicy(builder =>
     {
-        builder.WithOrigins("http://localhost:4200","*")
+        builder.WithOrigins("http://localhost:4200", "https://adol-partials-dev-1.adoldevtest.appserviceenvironment.net/Partials-Dev", "*")
         .SetIsOriginAllowedToAllowWildcardSubdomains()
         .AllowAnyMethod()
         .AllowAnyHeader()

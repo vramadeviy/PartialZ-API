@@ -52,6 +52,61 @@
 
         public DateTime? LastModifedDate { get; set; }
     }
+
+    public class EmployeeDirectoryListDto
+    {
+        public int EmployeeDirectoryId { get; set; }
+        public string Email { get; set; }
+        public int? FilerId { get; set; }
+
+        public string? SocialSecurityNumber { get; set; }
+
+        public DateTime? DateOfBirth { get; set; }
+
+        public string? TelephoneNumber { get; set; }
+
+        public string? ClaimantFirstName { get; set; }
+
+        public string? ClaimantMiddleName { get; set; }
+
+        public string? ClaimantLastName { get; set; }
+
+        public string? ClaimantSuffix { get; set; }
+
+        public string? AuthorizedAlienNumber { get; set; }
+
+        public string? MailingStreetAddress { get; set; }
+
+        public string? MailingCity { get; set; }
+
+        public string? MailingState { get; set; }
+
+        public string? ZipCode { get; set; }
+
+        public string? Gender { get; set; }
+
+        public string? Handicap { get; set; }
+
+        public string? VeteranStatus { get; set; }
+
+        public string? Race { get; set; }
+
+        public string? Ethnicity { get; set; }
+
+        public string? FederalwithHolding { get; set; }
+
+        public string? Citizen { get; set; }
+
+        public string? Education { get; set; }
+
+        public string? Occupation { get; set; }
+        public string? Status { get; set; }
+
+        public DateTime? CreatedDate { get; set; }
+
+        public DateTime? LastModifedDate { get; set; }
+    }
+
     public class EmployeeDirectoryDetailsDto
     {
         public string Email { get; set; }
@@ -97,6 +152,8 @@
         public int? Citizen { get; set; }
 
         public int? Education { get; set; }
+
+        public string? Status { get; set; }
 
 
     }

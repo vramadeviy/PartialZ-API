@@ -14,7 +14,7 @@ namespace PartialZ.Api.Controllers
         {
             this._employeedirectoryservice = employeedirectoryservice;
         }
-        [HttpGet] 
+        [HttpGet]
         public List<StateDto> GetStates()
         {
             var result = this._employeedirectoryservice.GetStates();
@@ -35,6 +35,13 @@ namespace PartialZ.Api.Controllers
             var result = await this._employeedirectoryservice.SaveEmplpyeeDirectoryDetails(empDirectoryDto);
             return Ok(result);
         }
+        [HttpPost]
+        [Route("BulkSaveEmployeeDirectory")]
+        public async Task<IActionResult> BulkSaveEmplpyeeDirectoryDetails([FromBody]  List<EmployeeDirectoryListDto> empDirectoryDto)
+        {
+            var result = await this._employeedirectoryservice.BulkSaveEmplpyeeDirectoryDetails(empDirectoryDto);
+            return Ok(result);
+        }
         [HttpGet]
         [Route("EmployeeDirectoryDetails")]
         public List<EmployeeDirectoryDetailsDto> GetEmployeeDetails(string EmailID)
@@ -43,18 +50,12 @@ namespace PartialZ.Api.Controllers
             return result;
         }
 
-        [HttpGet]
-        [Route("EmployeeDirectoryClaimantDetails")]
-        public EmployeeDirectoryDto GetEmployeedirectoryClaimantdetails(string ssn)
-        {
-            var result = this._employeedirectoryservice.GetEmployeedirectoryClaimantdetails(ssn);
-            return result;
-        }
+       
         [HttpPost]
         [Route("DeleteEmployeeDirectory")]
-        public async Task<IActionResult> DeleteEmplpyeeDirectoryDetails(string ssn)
+        public async Task<IActionResult> DeleteEmplpyeeDirectoryDetails(EmployeeDirectoryDto ssn)
         {
-            var result = this._employeedirectoryservice.DeleteEmplpyeeDirectoryDetails(ssn);
+            var result = this._employeedirectoryservice.DeleteEmplpyeeDirectoryDetails(ssn.SocialSecurityNumber);
             return Json(result);
         }
     }

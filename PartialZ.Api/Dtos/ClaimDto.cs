@@ -3,7 +3,7 @@
     public class ClaimDto
     {
         public int ClaimId { get; set; }
-        public string Email { get; set; }
+        public string? Email { get; set; }
 
 
 

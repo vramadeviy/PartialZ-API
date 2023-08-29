@@ -1,9 +1,12 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 using PartialZ.Api.Dtos;
 using PartialZ.Api.Services.Interfaces;
 using PartialZ.DataAccess.PartialZDB;
+using System.Runtime.Intrinsics.X86;
+
 namespace PartialZ.Api.Services
 {
     public class EmployeeDirectoryService : IEmployeeDirectoryService
@@ -77,8 +80,6 @@ namespace PartialZ.Api.Services
                 Code = e.Code
             }).ToList();
 
-
-
             return dd;
 
 
@@ -90,74 +91,109 @@ namespace PartialZ.Api.Services
             try
             {
                 int employeeDirectoryID = 0;
-                if (this._PartialClaimsContext.EmployeeDirectories.Where(e => e.SocialSecurityNumber == empDirectoryDto.SocialSecurityNumber).Any())
+
+                var filerid = await this._PartialClaimsContext.Filers.Where(e => e.Email == empDirectoryDto.Email).Select(x => x.EmployeeId).FirstAsync();
+                empDirectoryDto.SocialSecurityNumber = empDirectoryDto.SocialSecurityNumber.Replace("(", "").Replace(")", "").Replace("-", "").Replace(" ", ""); /*(206) - (60) - (1868)*/
+                empDirectoryDto.TelephoneNumber = empDirectoryDto.TelephoneNumber.Replace("(", "").Replace(")", "").Replace("-", "").Replace(" ", ""); /*(206) - (60) - (1868)*/
+
+
+                SqlParameter[] parameters = new[]
                 {
-                    //update
-                    var existingdata = await this._PartialClaimsContext.EmployeeDirectories.Where(e => e.SocialSecurityNumber == empDirectoryDto.SocialSecurityNumber).FirstAsync();
-                    existingdata.SocialSecurityNumber = empDirectoryDto.SocialSecurityNumber;
-                    existingdata.DateOfBirth = empDirectoryDto.DateOfBirth;
-                    existingdata.TelephoneNumber = empDirectoryDto.TelephoneNumber;
-                    existingdata.ClaimantFirstName = empDirectoryDto.ClaimantFirstName;
-                    existingdata.ClaimantMiddleName = empDirectoryDto.ClaimantMiddleName;
-                    existingdata.ClaimantSuffix = empDirectoryDto.ClaimantSuffix;
-                    existingdata.ClaimantLastName = empDirectoryDto.ClaimantLastName;
+                    new SqlParameter("@FilerId", filerid),
+                    new SqlParameter("@SocialSecurityNumber", string.IsNullOrEmpty(empDirectoryDto.SocialSecurityNumber) ? null : empDirectoryDto.SocialSecurityNumber),
+                    new SqlParameter("@DateOfBirth", string.IsNullOrEmpty(empDirectoryDto.DateOfBirth.ToString()) ? null : empDirectoryDto.DateOfBirth),
+                    new SqlParameter("@TelephoneNumber", string.IsNullOrEmpty(empDirectoryDto.TelephoneNumber) ? null : empDirectoryDto.TelephoneNumber),
+                    new SqlParameter("@ClaimantFirstName", string.IsNullOrEmpty(empDirectoryDto.ClaimantFirstName) ? null : empDirectoryDto.ClaimantFirstName),
 
-                    existingdata.MailingStreetAddress = empDirectoryDto.MailingStreetAddress;
-                    existingdata.MailingCity = empDirectoryDto.MailingCity;
-                    existingdata.MailingState = empDirectoryDto.MailingState;
-                    existingdata.ZipCode = empDirectoryDto.ZipCode;
-                    existingdata.Gender = empDirectoryDto.Gender;
-                    existingdata.Handicap = empDirectoryDto.Handicap;
-                    existingdata.VeteranStatus = empDirectoryDto.VeteranStatus;
+                    new SqlParameter("@ClaimantMiddleName", string.IsNullOrEmpty(empDirectoryDto.ClaimantMiddleName) ? null : empDirectoryDto.ClaimantMiddleName),
+                    new SqlParameter("@ClaimantLastName",  string.IsNullOrEmpty(empDirectoryDto.ClaimantLastName) ? null : empDirectoryDto.ClaimantLastName),
+                    new SqlParameter("@ClaimantSuffix",(empDirectoryDto.ClaimantSuffix)==0 ? 0 : empDirectoryDto.ClaimantSuffix),
+                    new SqlParameter("@AuthorizedAlienNumber", string.IsNullOrEmpty(empDirectoryDto.AuthorizedAlienNumber) ? null : empDirectoryDto.AuthorizedAlienNumber),
+                    new SqlParameter("@MailingStreetAddress", string.IsNullOrEmpty(empDirectoryDto.MailingStreetAddress) ? null : empDirectoryDto.MailingStreetAddress),
 
-                    existingdata.Race = empDirectoryDto.Race;
-                    existingdata.Ethnicity = empDirectoryDto.Ethnicity;
-                    existingdata.FederalwithHolding = empDirectoryDto.FederalwithHolding;
-                    existingdata.Citizen = empDirectoryDto.Citizen;
-                    existingdata.AuthorizedAlienNumber = empDirectoryDto.AuthorizedAlienNumber;
-                    existingdata.Education = empDirectoryDto.Education;
-                    existingdata.Occupation = empDirectoryDto.Occupation;
+                    new SqlParameter("@MailingCity", string.IsNullOrEmpty(empDirectoryDto.MailingCity) ? null : empDirectoryDto.MailingCity),
+                    new SqlParameter("@MailingState", (empDirectoryDto.MailingState)==0 ? null : empDirectoryDto.MailingState),
+                    new SqlParameter("@ZipCode", string.IsNullOrEmpty(empDirectoryDto.ZipCode) ? null : empDirectoryDto.ZipCode),
+                    new SqlParameter("@Gender", (empDirectoryDto.Gender)==0 ? null : empDirectoryDto.Gender),
+                    new SqlParameter("@Handicap", (empDirectoryDto.Handicap)==0 ? null : empDirectoryDto.Handicap),
 
+                    new SqlParameter("@VeteranStatus", (empDirectoryDto.VeteranStatus)==0 ? null : empDirectoryDto.VeteranStatus),
+                    new SqlParameter("@Race", (empDirectoryDto.Race)==0 ? null : empDirectoryDto.Race),
+                    new SqlParameter("@Ethnicity", (empDirectoryDto.Ethnicity)==0 ? null : empDirectoryDto.Ethnicity),
+                    new SqlParameter("@Citizen", (empDirectoryDto.Citizen)==0 ? null : empDirectoryDto.Citizen),
+                    new SqlParameter("@Education", (empDirectoryDto.Education)==0 ? null : empDirectoryDto.Education),
 
-                    existingdata.LastModifedDate = DateTime.UtcNow;
-                    await this._PartialClaimsContext.SaveChangesAsync();
-                    employeeDirectoryID = existingdata.EmployeeDirectoryId;
-                }
-                else
+                    new SqlParameter("@Occupation", string.IsNullOrEmpty(empDirectoryDto.Occupation) ? null : empDirectoryDto.Occupation),
+                    new SqlParameter("@FederalwithHolding", (empDirectoryDto.FederalwithHolding)==0 ? null : empDirectoryDto.FederalwithHolding),
+                    new SqlParameter("@CreatedDate", DateTime.UtcNow),
+                    new SqlParameter("@LastModifedDate", DateTime.UtcNow),
+            };
+
+                var claimantData = this.CallStoredProcedure<ClaimantDto>("dbo.InsertUpdateEmployeeDirectories", parameters);
+
+                return 1;
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+        }
+
+        public async Task<int> BulkSaveEmplpyeeDirectoryDetails(List<EmployeeDirectoryListDto> empDirectoryDto)
+        {
+            try
+            {
+                int employeeDirectoryID = 0;
+
+                foreach (var item in empDirectoryDto)
                 {
-                    var filerid = await this._PartialClaimsContext.Filers.Where(e => e.Email == empDirectoryDto.Email).Select(x => x.EmployeeId).FirstAsync();
-                    //insert
-                    var data = new EmployeeDirectory()
+                    var filerid = await this._PartialClaimsContext.Filers.Where(e => e.Email == item.Email).Select(x => x.EmployeeId).FirstAsync();
+                    var stateId = this._PartialClaimsContext.States.Where(c => c.StateCode == item.MailingState).Select(c => c.StateId).SingleOrDefault();
+                    var claimantSuffix = this._PartialClaimsContext.DropdownNameSuffixes.Where(c => c.Code == item.ClaimantSuffix).Select(c => c.NameSuffixId).SingleOrDefault();
+                    var gender = this._PartialClaimsContext.DropdownGenders.Where(c => c.Code == item.Gender).Select(c => c.GenderId).SingleOrDefault();
+                    var handicap = this._PartialClaimsContext.DropdownHandicaps.Where(c => c.Code == item.Handicap).Select(c => c.HandicapId).SingleOrDefault();
+                    var veteranStatus = this._PartialClaimsContext.DropdownVeterans.Where(c => c.Code == item.VeteranStatus).Select(c => c.VeteranId).SingleOrDefault();
+                    var race = this._PartialClaimsContext.DropdownRaces.Where(c => c.Code == item.Race).Select(c => c.RaceId).SingleOrDefault();
+                    var ethnicity = this._PartialClaimsContext.DropdownEthnicities.Where(c => c.Code == item.Ethnicity).Select(c => c.EthnicityId).SingleOrDefault();
+                    var citizen = this._PartialClaimsContext.DropdownCitizens.Where(c => c.Code == item.Citizen).Select(c => c.CitizenId).SingleOrDefault();
+                    var education = this._PartialClaimsContext.DropdownEducations.Where(c => c.Code == item.Education).Select(c => c.EducationId).SingleOrDefault();
+                    var federalwithdrawing = this._PartialClaimsContext.DropdownWithholdings.Where(c => c.Code == item.FederalwithHolding).Select(c => c.WithholdingsId).SingleOrDefault();
+
+                    SqlParameter[] parameters = new[]
                     {
-                        SocialSecurityNumber = empDirectoryDto.SocialSecurityNumber,
-                        FilerId = filerid,
-                        DateOfBirth = empDirectoryDto.DateOfBirth,
-                        TelephoneNumber = empDirectoryDto.TelephoneNumber,
-                        ClaimantFirstName = empDirectoryDto.ClaimantFirstName,
-                        ClaimantMiddleName = empDirectoryDto.ClaimantMiddleName,
-                        ClaimantSuffix = empDirectoryDto.ClaimantSuffix,
-                        ClaimantLastName = empDirectoryDto.ClaimantLastName,
-                        MailingStreetAddress = empDirectoryDto.MailingStreetAddress,
-                        MailingCity = empDirectoryDto.MailingCity,
-                        MailingState = empDirectoryDto.MailingState,
-                        ZipCode = empDirectoryDto.ZipCode,
-                        Gender = empDirectoryDto.Gender,
-                        Handicap = empDirectoryDto.Handicap,
-                        VeteranStatus = empDirectoryDto.VeteranStatus,
-                        Race = empDirectoryDto.Race,
-                        Ethnicity = empDirectoryDto.Ethnicity,
-                        FederalwithHolding = empDirectoryDto.FederalwithHolding,
-                        Citizen = empDirectoryDto.Citizen,
-                        AuthorizedAlienNumber = empDirectoryDto.AuthorizedAlienNumber,
-                        Education = empDirectoryDto.Education,
-                        Occupation = empDirectoryDto.Occupation,
-                        CreatedDate = DateTime.UtcNow
-                    };
-                    await this._PartialClaimsContext.EmployeeDirectories.AddAsync(data);
-                    await this._PartialClaimsContext.SaveChangesAsync();
-                    employeeDirectoryID = data.EmployeeDirectoryId;
+                    new SqlParameter("@FilerId", filerid),
+                    new SqlParameter("@SocialSecurityNumber", string.IsNullOrEmpty(item.SocialSecurityNumber) ? null : item.SocialSecurityNumber),
+                    new SqlParameter("@DateOfBirth", string.IsNullOrEmpty(item.DateOfBirth.ToString()) ? null : item.DateOfBirth),
+                    new SqlParameter("@TelephoneNumber", string.IsNullOrEmpty(item.TelephoneNumber) ? null : item.TelephoneNumber),
+                    new SqlParameter("@ClaimantFirstName", string.IsNullOrEmpty(item.ClaimantFirstName) ? null : item.ClaimantFirstName),
+
+                    new SqlParameter("@ClaimantMiddleName", string.IsNullOrEmpty(item.ClaimantMiddleName) ? null : item.ClaimantMiddleName),
+                    new SqlParameter("@ClaimantLastName",  string.IsNullOrEmpty(item.ClaimantLastName) ? null : item.ClaimantLastName),
+                    new SqlParameter("@ClaimantSuffix",claimantSuffix==0 ? 0 : claimantSuffix),
+                    new SqlParameter("@AuthorizedAlienNumber", string.IsNullOrEmpty(item.AuthorizedAlienNumber) ? null : item.AuthorizedAlienNumber),
+                    new SqlParameter("@MailingStreetAddress", string.IsNullOrEmpty(item.MailingStreetAddress) ? null : item.MailingStreetAddress),
+
+                    new SqlParameter("@MailingCity", string.IsNullOrEmpty(item.MailingCity) ? null : item.MailingCity),
+                    new SqlParameter("@MailingState",  stateId == 0 ? 0 : stateId),
+                    new SqlParameter("@ZipCode", string.IsNullOrEmpty(item.ZipCode) ? null : item.ZipCode),
+                    new SqlParameter("@Gender", gender==0 ? null : gender),
+                    new SqlParameter("@Handicap", handicap==0 ? null : handicap),
+
+                    new SqlParameter("@VeteranStatus", veteranStatus ==0 ? null : veteranStatus),
+                    new SqlParameter("@Race", race==0 ? null : race),
+                    new SqlParameter("@Ethnicity", ethnicity==0 ? null : ethnicity),
+                    new SqlParameter("@Citizen", citizen==0 ? null : citizen),
+                    new SqlParameter("@Education", education==0 ? null : education),
+
+                    new SqlParameter("@Occupation", string.IsNullOrEmpty(item.Occupation) ? null : item.Occupation),
+                    new SqlParameter("@FederalwithHolding", federalwithdrawing==0 ? null : federalwithdrawing),
+                    new SqlParameter("@CreatedDate", DateTime.UtcNow),
+                    new SqlParameter("@LastModifedDate", DateTime.UtcNow),
+            };
+
+                    var claimantData = this.CallStoredProcedure<ClaimantDto>("dbo.InsertUpdateEmployeeDirectories", parameters);
                 }
-                return employeeDirectoryID;
+                return 1;
             }
             catch (Exception ex)
             {
@@ -199,47 +235,15 @@ namespace PartialZ.Api.Services
                    FederalwithHolding = z.e.f.FederalwithHolding,
                    VeteranStatus = z.e.f.VeteranStatus,
                    Education = z.e.f.Education,
-                   AuthorizedAlienNumber = z.e.f.AuthorizedAlienNumber
+                   AuthorizedAlienNumber = z.e.f.AuthorizedAlienNumber,
+                   Status = z.e.f.Status
 
-               }).Where(e => e.Email == EmailID).ToList();
+               }).Where(x=>x.Email==EmailID && x.Status== "ACTIVE").ToList();
 
             return result;
         }
 
-        public EmployeeDirectoryDto GetEmployeedirectoryClaimantdetails(string ssn)
-        {
-            SqlParameter[] parameters = new[]
-            {
-                new SqlParameter("@SSN", string.IsNullOrEmpty(ssn) ? null : ssn)
-            };
-
-            var claimantData = this.CallStoredProcedure<ClaimantDto>("dbo.sp_ValidateClaimant", parameters);
-
-            var result = claimantData.FirstOrDefault();
-
-            EmployeeDirectoryDto edDto = new EmployeeDirectoryDto();
-            edDto.SocialSecurityNumber = ssn;
-            edDto.DateOfBirth = result.DOB;
-            edDto.TelephoneNumber = result.PhoneNumber;
-            edDto.ClaimantFirstName = result.ClaimantFirstName;
-            edDto.ClaimantMiddleName = result.ClaimantMiddleName;
-            edDto.ClaimantLastName = result.ClaimantLastName;
-            edDto.MailingStreetAddress = result.AddressLine1;
-            edDto.MailingCity = result.City;
-            edDto.MailingState = this._PartialClaimsContext.States.Where(e => e.StateCode == result.State).Select(x => x.StateId).FirstOrDefault();
-            edDto.ZipCode = result.ZIP;
-            edDto.Gender = this._PartialClaimsContext.DropdownGenders.Where(e => e.Code == result.Gender).Select(x => x.GenderId).FirstOrDefault();
-            edDto.Handicap = this._PartialClaimsContext.DropdownHandicaps.Where(e => e.Code == result.Handicap).Select(x => x.HandicapId).FirstOrDefault();
-            edDto.VeteranStatus = this._PartialClaimsContext.DropdownVeterans.Where(e => e.Code == result.Veteran).Select(x => x.VeteranId).FirstOrDefault();
-            edDto.Race = this._PartialClaimsContext.DropdownRaces.Where(e => e.Code == result.Race).Select(x => x.RaceId).FirstOrDefault();
-            edDto.Ethnicity = this._PartialClaimsContext.DropdownEthnicities.Where(e => e.Code == result.Ethnicity).Select(x => x.EthnicityId).FirstOrDefault();
-            edDto.FederalwithHolding = this._PartialClaimsContext.DropdownWithholdings.Where(e => e.Code == result.Withholdings).Select(x => x.WithholdingsId).FirstOrDefault();
-            edDto.Citizen = this._PartialClaimsContext.DropdownCitizens.Where(e => e.Code == result.Citizen).Select(x => x.CitizenId).FirstOrDefault();
-            edDto.Education = this._PartialClaimsContext.DropdownEducations.Where(e => e.Code == result.Education).Select(x => x.EducationId).FirstOrDefault();
-
-
-            return edDto;
-        }
+      
         public IEnumerable<TResult> CallStoredProcedure<TResult>(string storedProcedureName, params SqlParameter[] parameters)
         {
             var connectionString = _PartialClaimsContext.Database.GetConnectionString();
@@ -294,18 +298,20 @@ namespace PartialZ.Api.Services
             return result;
         }
 
-        public async Task<string> DeleteEmplpyeeDirectoryDetails(string ssn)
+        public async Task<int> DeleteEmplpyeeDirectoryDetails(string ssn)
         {
             try
             {
-                if (this._PartialClaimsContext.EmployeeDirectories.Where(e => e.SocialSecurityNumber == ssn).Any())
+                ssn = ssn.Replace("(", "").Replace(")","").Replace("-","").Replace(" ",""); /*(206) - (60) - (1868)*/
+
+                SqlParameter[] parameters = new[]
                 {
-                    var existingdata = await this._PartialClaimsContext.EmployeeDirectories.Where(e => e.SocialSecurityNumber == ssn).FirstAsync();
-                    this._PartialClaimsContext.EmployeeDirectories.Remove(existingdata);
-                    this._PartialClaimsContext.SaveChangesAsync();
-                   
-                }
-                return "Deleted Successfully..";
+                    new SqlParameter("@SocialSecurityNumber", string.IsNullOrEmpty(ssn) ? null : ssn)
+            };
+
+                this.CallStoredProcedure<ClaimantDto>("dbo.DeleteEmployeeDirectories", parameters);
+
+                return 1;
             }
             catch (Exception ex)
             {

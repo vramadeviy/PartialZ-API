@@ -6,8 +6,8 @@ namespace PartialZ.Api.Services.Interfaces
       List<StateDto> GetStates();
         DropdownsDto GetAllDropdowns();
         Task<int> SaveEmplpyeeDirectoryDetails(EmployeeDirectoryDto empDirectoryDto);
+        Task<int> BulkSaveEmplpyeeDirectoryDetails(List<EmployeeDirectoryListDto> empDirectoryDto);
         List<EmployeeDirectoryDetailsDto> GetEmployeeDirectoryDetails(string EmailID);
-        EmployeeDirectoryDto GetEmployeedirectoryClaimantdetails(string ssn);
-        Task<string> DeleteEmplpyeeDirectoryDetails(string ssn);
+        Task<int> DeleteEmplpyeeDirectoryDetails(string ssn);
     }
 }

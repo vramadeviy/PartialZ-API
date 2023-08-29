@@ -69,5 +69,7 @@ public partial class Claim
 
     public DateTime? LastModifedDate { get; set; }
 
+    public string? Status { get; set; }
+
     public virtual Filer? Filer { get; set; }
 }

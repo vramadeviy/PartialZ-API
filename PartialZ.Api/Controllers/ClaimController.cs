@@ -17,5 +17,12 @@ namespace PartialZ.Api.Controllers
             var result = await this._claimservice.SaveClaimDetails(claimDto);
             return Ok(result);
         }
+        [HttpGet]
+        [Route("ClaimDetails")]
+        public ClaimantDto GetEmployeedirectoryClaimantdetails(string ssn)
+        {
+            var result = this._claimservice.GetClaimClaimantdetails(ssn);
+            return result;
+        }
     }
 }

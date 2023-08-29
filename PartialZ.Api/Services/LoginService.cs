@@ -60,7 +60,7 @@ namespace PartialZ.Api.Services
             }
             catch (Exception ex)
             {
-                throw ex;
+                return ex.ToString();
             }
         }
         public string ValidateOTP(string emailID, string OTP)
